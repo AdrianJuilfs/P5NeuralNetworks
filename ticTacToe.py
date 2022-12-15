@@ -34,8 +34,9 @@ intro = py.transform.scale(intro, (breite, hoehe + 100))
 bildX = py.transform.scale(bildX, (80, 80))
 bildO = py.transform.scale(bildO, (80, 80))
 
+
 # Definition des Spielstarts:
-def spielStarten():
+def spiel_starten():
     display.blit(intro, (0, 0))
     py.display.update()
     time.sleep(1)
@@ -47,10 +48,11 @@ def spielStarten():
     py.draw.line(display, linienFarbe, (0, hoehe / 3), (breite, hoehe / 3), 7)
     py.draw.line(display, linienFarbe, (0, hoehe / 3 * 2), (breite, hoehe / 3 * 2), 7)
 # Senkrechte Linien
-    zeichenStatus()
+    zeichen_status()
+
 
 # Überprüfung was gezeichnet wurde
-def zeichenStatus():
+def zeichen_status():
     global zeichnen
 
     if gewonnen is None:
@@ -66,12 +68,13 @@ def zeichenStatus():
     display.blit(text, text_rect)
     py.display.update()
 
+
 # Gewinnüberprüfung
-def gewonnenPruefen():
+def gewonnen_pruefen():
     global TicTacToe, gewonnen, zeichnen
     # überprüfung von gewonnen Reihen
     for row in range(0, 3):
-        if ((TicTacToe[row][0] == TicTacToe[row][1] == TicTacToe[row][2]) and (TicTacToe[row][0] is not None)):
+        if (TicTacToe[row][0] == TicTacToe[row][1] == TicTacToe[row][2]) and (TicTacToe[row][0] is not None):
             # Gewonnen
             gewonnen = TicTacToe[row][0]
             # Gewinnerlinie zeichnen
@@ -99,11 +102,12 @@ def gewonnenPruefen():
         # Überpreüfung ob alle Felder Leer sind
     if all([all(row) for row in TicTacToe]) and gewonnen is None:
         zeichnen = True
-    zeichenStatus()
+    zeichen_status()
+
 
 # Zeichnet die X'e und O's
-def zeichnenVonXO(row, col):
-    global TicTacToe, XO
+def zeichnen_von_xo(row, col):
+    global TicTacToe, XO, posx, posy
     if row == 1:
         posx = 30
     if row == 2:
@@ -118,7 +122,7 @@ def zeichnenVonXO(row, col):
     if col == 3:
         posy = hoehe / 3 * 2 + 30
     TicTacToe[row - 1][col - 1] = XO
-    if (XO == 'x'):
+    if XO == 'x':
         display.blit(bildX, (posy, posx))
         XO = 'o'
     else:
@@ -129,55 +133,55 @@ def zeichnenVonXO(row, col):
     print(TicTacToe)
 
 
-def userClick():
+def user_click():
     # bekommte die Koordinaten des geklickten Feldes
     x, y = py.mouse.get_pos()
     # bekommt die Zeile des geklickten Feldes
-    if (x < breite / 3):
+    if x < breite / 3:
         col = 1
-    elif (x < breite / 3 * 2):
+    elif x < breite / 3 * 2:
         col = 2
-    elif (x < breite):
+    elif x < breite:
         col = 3
     else:
         col = None
     # bekommt die Spalte des geklickten Feldes
-    if (y < hoehe / 3):
+    if y < hoehe / 3:
         row = 1
-    elif (y < hoehe / 3 * 2):
+    elif y < hoehe / 3 * 2:
         row = 2
-    elif (y < hoehe):
+    elif y < hoehe:
         row = 3
     else:
         row = None
-    if (row and col and TicTacToe[row - 1][col - 1] is None):
+    if row and col and TicTacToe[row - 1][col - 1] is None:
         global XO
         # zeichnet das X oder O auf das Feld
-        zeichnenVonXO(row, col)
-        gewonnenPruefen()
+        zeichnen_von_xo(row, col)
+        gewonnen_pruefen()
 
 
-def spielReseten():
+def spiel_reseten():
     global TicTacToe, gewonnen, XO, zeichnen
     time.sleep(3)
     zeichnen = False
     XO = 'x'
-    spielStarten()
+    spiel_starten()
     gewonnen = None
     TicTacToe = [[None] * 3, [None] * 3, [None] * 3]
 
 
-spielStarten()
+spiel_starten()
 # Endlosschleife des Spiels, damit es immer wieder gespielt werden kann
-while (True):
+while True:
     for event in py.event.get():
         if event.type == QUIT:
             py.quit()
             sys.exit()
         elif event.type == MOUSEBUTTONDOWN:
             # Click-Event Erkennung
-            userClick()
-            if (gewonnen or zeichnen):
-                spielReseten()
+            user_click()
+            if gewonnen or zeichnen:
+                spiel_reseten()
     py.display.update()
     CLOCK.tick(fps)
