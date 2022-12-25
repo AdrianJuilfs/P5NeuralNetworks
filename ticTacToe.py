@@ -1,7 +1,7 @@
 import sys
 
 import pygame as py
-from pygame.locals import *
+from pygame.constants import QUIT,MOUSEBUTTONDOWN
 import time
 
 # deklaration des Feldes und des startenden zeichens
