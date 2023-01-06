@@ -112,17 +112,17 @@ class Roehre():
         self.oben = 0
         self.unten = 0
 
-        self.PIPE_TOP = pygame.transform.flip(roehren_bild, False, True)
-        self.PIPE_BOTTOM = roehren_bild
+        self.ROHERE_OBEN = pygame.transform.flip(roehren_bild, False, True)
+        self.ROEHRE_UNTEN = roehren_bild
 
-        self.passed = False
+        self.geschafft = False
 
         self.hoehe_setzen()
 
     def hoehe_setzen(self):
 
         self.hoehe = random.randrange(50, 450)
-        self.oben = self.hoehe - self.PIPE_TOP.get_height()
+        self.oben = self.hoehe - self.ROHERE_OBEN.get_height()
         self.unten = self.hoehe + self.platz
 
     def bewegen(self):
@@ -131,53 +131,53 @@ class Roehre():
 
     def zeichnen(self, win):
 
-        # draw top
-        win.blit(self.PIPE_TOP, (self.x, self.oben))
-        # draw bottom
-        win.blit(self.PIPE_BOTTOM, (self.x, self.unten))
+        # obere Röhre wird gezeichnet
+        win.blit(self.ROHERE_OBEN, (self.x, self.oben))
+        # untere Röhre wird gezeichnet
+        win.blit(self.ROEHRE_UNTEN, (self.x, self.unten))
 
 
     def kollision(self, bird, win):
 
-        bird_mask = bird.get_mask()
-        top_mask = pygame.mask.from_surface(self.PIPE_TOP)
-        bottom_mask = pygame.mask.from_surface(self.PIPE_BOTTOM)
-        top_offset = (self.x - bird.x, self.oben - round(bird.y))
-        bottom_offset = (self.x - bird.x, self.unten - round(bird.y))
+        vogel_maske = bird.get_mask()
+        obere_maske = pygame.mask.from_surface(self.ROHERE_OBEN)
+        untere_maske = pygame.mask.from_surface(self.ROEHRE_UNTEN)
+        oben_versetzt = (self.x - bird.x, self.oben - round(bird.y))
+        unten_versetzt = (self.x - bird.x, self.unten - round(bird.y))
 
-        b_point = bird_mask.overlap(bottom_mask, bottom_offset)
-        t_point = bird_mask.overlap(top_mask,top_offset)
+        unterer_punkt = vogel_maske.overlap(untere_maske, unten_versetzt)
+        oberer_Punkt = vogel_maske.overlap(obere_maske,oben_versetzt)
 
-        if b_point or t_point:
+        if unterer_punkt or oberer_Punkt:
             return True
 
         return False
 
 class Boden:
-    VEL = 5
-    WIDTH = boden_bild.get_width()
-    IMG = boden_bild
+    GESCHWINDIGKEIT = 5
+    BREITE = boden_bild.get_width()
+    BILD = boden_bild
 
     def __init__(self, y):
  
         self.y = y
         self.x1 = 0
-        self.x2 = self.WIDTH
+        self.x2 = self.BREITE
 
     def bewegen(self):
 
-        self.x1 -= self.VEL
-        self.x2 -= self.VEL
-        if self.x1 + self.WIDTH < 0:
-            self.x1 = self.x2 + self.WIDTH
+        self.x1 -= self.GESCHWINDIGKEIT
+        self.x2 -= self.GESCHWINDIGKEIT
+        if self.x1 + self.BREITE < 0:
+            self.x1 = self.x2 + self.BREITE
 
-        if self.x2 + self.WIDTH < 0:
-            self.x2 = self.x1 + self.WIDTH
+        if self.x2 + self.BREITE < 0:
+            self.x2 = self.x1 + self.BREITE
 
     def zeichnen(self, win):
 
-        win.blit(self.IMG, (self.x1, self.y))
-        win.blit(self.IMG, (self.x2, self.y))
+        win.blit(self.BILD, (self.x1, self.y))
+        win.blit(self.BILD, (self.x2, self.y))
 
 
 def gedrehtesBild(surf, image, topleft, angle):
@@ -187,71 +187,70 @@ def gedrehtesBild(surf, image, topleft, angle):
 
     surf.blit(rotated_image, new_rect.topleft)
 
-def fenster_zeichnen(win, birds, pipes, base, score, gen, pipe_ind):
+def fenster_zeichnen(gewonnen, voegel, roehren, boden, punktzahl, gen, pipe_ind):
 
     if gen == 0:
         gen = 1
-    win.blit(hintergrund_bild, (0, 0))
+    gewonnen.blit(hintergrund_bild, (0, 0))
 
-    for pipe in pipes:
-        pipe.zeichnen(win)
+    for pipe in roehren:
+        pipe.zeichnen(gewonnen)
 
-    base.zeichnen(win)
-    for bird in birds:
-        # drawing lines from bird to pipe
+    boden.zeichnen(gewonnen)
+    for bird in voegel:
+        # zeichnet Linien vom vogel zur Röhre
         if LINIEN_ZEICHNEN:
             try:
-                pygame.draw.line(win, (255,0,0), (bird.x + bird.bild.get_width() / 2, bird.y + bird.bild.get_height() / 2),
-                                 (pipes[pipe_ind].x + pipes[pipe_ind].PIPE_TOP.get_width()/2, pipes[pipe_ind].hoehe), 5)
-                pygame.draw.line(win, (255,0,0), (bird.x + bird.bild.get_width() / 2, bird.y + bird.bild.get_height() / 2),
-                                 (pipes[pipe_ind].x + pipes[pipe_ind].PIPE_BOTTOM.get_width()/2, pipes[pipe_ind].unten), 5)
+                pygame.draw.line(gewonnen, (255, 0, 0), (bird.x + bird.bild.get_width() / 2, bird.y + bird.bild.get_height() / 2),
+                                 (roehren[pipe_ind].x + roehren[pipe_ind].ROHERE_OBEN.get_width() / 2, roehren[pipe_ind].hoehe), 5)
+                pygame.draw.line(gewonnen, (255, 0, 0), (bird.x + bird.bild.get_width() / 2, bird.y + bird.bild.get_height() / 2),
+                                 (roehren[pipe_ind].x + roehren[pipe_ind].ROEHRE_UNTEN.get_width() / 2, roehren[pipe_ind].unten), 5)
             except:
                 pass
-        # draw bird
-        bird.zeichnen(win)
+        # vogel zeichnen
+        bird.zeichnen(gewonnen)
 
-    # reflecting the score
-    score_label = STAT_FONT.render("Score: " + str(score),1,(255,255,255))
-    win.blit(score_label, (FENSTER_BREITE - score_label.get_width() - 15, 10))
+    # Punktzahl anzeigen
+    score_label = STAT_FONT.render("Score: " + str(punktzahl), 1, (255, 255, 255))
+    gewonnen.blit(score_label, (FENSTER_BREITE - score_label.get_width() - 15, 10))
 
-    # generations
+    # Generationen
     score_label = STAT_FONT.render("Gens: " + str(gen-1),1,(255,255,255))
-    win.blit(score_label, (10, 10))
+    gewonnen.blit(score_label, (10, 10))
 
-    # alive
-    score_label = STAT_FONT.render("Alive: " + str(len(birds)),1,(255,255,255))
-    win.blit(score_label, (10, 50))
+    # Anzahl der lebenden Vögel anzeigen
+    score_label = STAT_FONT.render("Alive: " + str(len(voegel)), 1, (255, 255, 255))
+    gewonnen.blit(score_label, (10, 50))
 
     pygame.display.update()
 
 
-def eval_genomes(genomes, config):
+def gene_auswerten(genomes, config):
 
     global WIN, gen
     win = WIN
     gen += 1
 
-    # start by creating lists holding the genome itself, the
-    # neural network associated with the genome and the
-    # bird object that uses that network to play
+    # Zuerst werden Listen erstellt, welche die Gene enthalten, dann diese im Zusammenhang mit dem neuronalen Netzwerk
+    # und am Ende wird noch das Vogelobjekt erstellt, mit welchem die KI am Ende spielt
     nets = []
-    birds = []
+    voegel = []
     ge = []
     for genome_id, genome in genomes:
-        genome.fitness = 0  # start with fitness level of 0
+        genome.fitness = 0  # Zu beginn ist das fitness level 0
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         nets.append(net)
-        birds.append(Vogel(230, 350))
+        voegel.append(Vogel(230, 350))
         ge.append(genome)
 
     base = Boden(BODEN)
-    pipes = [Roehre(700)]
+    roehren = [Roehre(700)]
     score = 0
 
     clock = pygame.time.Clock()
 
     run = True
-    while run and len(birds) > 0:
+    while run and len(voegel) > 0:
         clock.tick(30)
 
         for event in pygame.event.get():
@@ -262,58 +261,58 @@ def eval_genomes(genomes, config):
                 break
 
         pipe_ind = 0
-        if len(birds) > 0:
-            if len(pipes) > 1 and birds[0].x > pipes[0].x + pipes[0].PIPE_TOP.get_width():  # determine whether to use the first or second
-                pipe_ind = 1                                                                 # pipe on the screen for neural network input
+        if len(voegel) > 0:
+            if len(roehren) > 1 and voegel[0].x > roehren[0].x + roehren[0].ROHERE_OBEN.get_width():  # guckt, ob die erste oder die zweite Röhre
+                pipe_ind = 1                                                                            #verwendet werden soll, wenn mehrere auf dem Bildschirm sind
 
-        for x, bird in enumerate(birds):  # giving each bird a fitness of 0.1 for each frame it stays alive
+        for x, vogel in enumerate(voegel):  # pro sekunde wo ein Vogel lebt, wird das fitness level um 0,1 hochgesetzt
             ge[x].fitness += 0.1
-            bird.bewegen()
+            vogel.bewegen()
 
-            # send bird location, top pipe location and bottom pipe location and determine from network whether to jump or not
-            output = nets[birds.index(bird)].activate((bird.y, abs(bird.y - pipes[pipe_ind].hoehe), abs(bird.y - pipes[pipe_ind].unten)))
+            # sendet dem neuron die Vogelposition, die Röhrenpositionen and und lässt die KI entscheiden, ob der Vogel springen soll, oder nicht
+            output = nets[voegel.index(vogel)].activate((vogel.y, abs(vogel.y - roehren[pipe_ind].hoehe), abs(vogel.y - roehren[pipe_ind].unten)))
 
-            if output[0] > 0.5:  # we use a tanh activation function so result will be between -1 and 1. if over, then 0.5 jump
-                bird.springen()
+            if output[0] > 0.5:  # benutzt wird eine tanh Aktivierungsfunktion, welche ein Ergebniuss zwischen -1 und 1 hält. Wenn über 0.5 soll der Vogel springen
+                vogel.springen()
 
         base.bewegen()
 
         rem = []
         add_pipe = False
-        for pipe in pipes:
+        for pipe in roehren:
             pipe.bewegen()
             # checking for collision
-            for bird in birds:
-                if pipe.kollision(bird, win):
-                    ge[birds.index(bird)].fitness -= 1
-                    nets.pop(birds.index(bird))
-                    ge.pop(birds.index(bird))
-                    birds.pop(birds.index(bird))
+            for vogel in voegel:
+                if pipe.kollision(vogel, win):
+                    ge[voegel.index(vogel)].fitness -= 1
+                    nets.pop(voegel.index(vogel))
+                    ge.pop(voegel.index(vogel))
+                    voegel.pop(voegel.index(vogel))
 
-            if pipe.x + pipe.PIPE_TOP.get_width() < 0:
+            if pipe.x + pipe.ROHERE_OBEN.get_width() < 0:
                 rem.append(pipe)
 
-            if not pipe.passed and pipe.x < bird.x:
-                pipe.passed = True
+            if not pipe.geschafft and pipe.x < vogel.x:
+                pipe.geschafft = True
                 add_pipe = True
 
         if add_pipe:
             score += 1
-            # can add this line to give more reward for passing through a pipe (not required)
+            # hier wird der fitnesswert jedes Mal, wenn er eine Röhre durchquert, hochgesetzt
             for genome in ge:
                 genome.fitness += 5
-            pipes.append(Roehre(FENSTER_BREITE))
+            roehren.append(Roehre(FENSTER_BREITE))
 
         for r in rem:
-            pipes.remove(r)
+            roehren.remove(r)
 
-        for bird in birds:
-            if bird.y + bird.bild.get_height() - 10 >= BODEN or bird.y < -50:
-                nets.pop(birds.index(bird))
-                ge.pop(birds.index(bird))
-                birds.pop(birds.index(bird))
+        for vogel in voegel:
+            if vogel.y + vogel.bild.get_height() - 10 >= BODEN or vogel.y < -50:
+                nets.pop(voegel.index(vogel))
+                ge.pop(voegel.index(vogel))
+                voegel.pop(voegel.index(vogel))
 
-        fenster_zeichnen(WIN, birds, pipes, base, score, gen, pipe_ind)
+        fenster_zeichnen(WIN, voegel, roehren, base, score, gen, pipe_ind)
 
 
 
@@ -324,24 +323,22 @@ def run(config_file):
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
 
-    # Create the population
+    # Population wird erstellt
     p = neat.Population(config)
 
-    # Add a stdout reporter to show progress in the terminal.
+    # ein reporter wird erstellt, um den Fortschritt der KI in der Konsole auszugeben
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
 
-    # Run for up to 50 generations.
-    winner = p.run(eval_genomes, 50)
+    # Maximum 50 Generationen werden erstellt
+    winner = p.run(gene_auswerten, 50)
 
-    # show final stats
+    # nach 50 Generationen wird das finale Ergebnis abgezeigt
     print('\nBest genome:\n{!s}'.format(winner))
 
 
 if __name__ == '__main__':
-    # Determine path to configuration file. This path manipulation is
-    # here so that the script will run successfully.
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, 'CONFIG.txt')
     run(config_path)
