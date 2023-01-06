@@ -4,7 +4,7 @@ import os
 import time
 import neat
 import pickle
-pygame.font.init() #initialisierung der Schriftarten von pygame
+pygame.font.init() # initialisierung der Schriftarten von pygame
 
 FENSTER_BREITE = 600
 FENSTER_HOEHE = 800
@@ -243,15 +243,15 @@ def gene_auswerten(genomes, config):
         voegel.append(Vogel(230, 350))
         ge.append(genome)
 
-    base = Boden(BODEN)
+    boden = Boden(BODEN)
     roehren = [Roehre(700)]
-    score = 0
+    punktzahl = 0
 
-    clock = pygame.time.Clock()
+    timer = pygame.time.Clock()
 
     run = True
     while run and len(voegel) > 0:
-        clock.tick(30)
+        timer.tick(30)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -275,7 +275,7 @@ def gene_auswerten(genomes, config):
             if output[0] > 0.5:  # benutzt wird eine tanh Aktivierungsfunktion, welche ein Ergebniuss zwischen -1 und 1 hält. Wenn über 0.5 soll der Vogel springen
                 vogel.springen()
 
-        base.bewegen()
+        boden.bewegen()
 
         rem = []
         add_pipe = False
@@ -297,7 +297,7 @@ def gene_auswerten(genomes, config):
                 add_pipe = True
 
         if add_pipe:
-            score += 1
+            punktzahl += 1
             # hier wird der fitnesswert jedes Mal, wenn er eine Röhre durchquert, hochgesetzt
             for genome in ge:
                 genome.fitness += 5
@@ -312,7 +312,7 @@ def gene_auswerten(genomes, config):
                 ge.pop(voegel.index(vogel))
                 voegel.pop(voegel.index(vogel))
 
-        fenster_zeichnen(WIN, voegel, roehren, base, score, gen, pipe_ind)
+        fenster_zeichnen(WIN, voegel, roehren, boden, punktzahl, gen, pipe_ind)
 
 
 
