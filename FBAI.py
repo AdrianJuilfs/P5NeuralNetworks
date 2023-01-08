@@ -9,9 +9,8 @@ pygame.font.init() # initialisierung der Schriftarten von pygame
 FENSTER_BREITE = 600
 FENSTER_HOEHE = 800
 BODEN = 730
-STAT_FONT = pygame.font.SysFont("arial", 50)
-END_FONT = pygame.font.SysFont("arial", 70)
-LINIEN_ZEICHNEN = False
+STAT_FONT = pygame.font.SysFont("arial", 40)
+LINIEN_ZEICHNEN = True
 
 WIN = pygame.display.set_mode((FENSTER_BREITE, FENSTER_HOEHE))
 pygame.display.set_caption("Flappy Bird")
@@ -66,7 +65,7 @@ class Vogel:
         if verschiebung < 0 or self.y < self.hoehe + 50:
             if self.ausrichtung < self.animationsrotation:
                 self.ausrichtung = self.animationsrotation
-        else: 
+        else:
             if self.ausrichtung > -90:
                 self.ausrichtung -= self.rotationsgeschwindigkeit
 
@@ -159,7 +158,7 @@ class Boden:
     BILD = boden_bild
 
     def __init__(self, y):
- 
+
         self.y = y
         self.x1 = 0
         self.x2 = self.BREITE
@@ -180,12 +179,11 @@ class Boden:
         win.blit(self.BILD, (self.x2, self.y))
 
 
-def gedrehtesBild(surf, image, topleft, angle):
+def gedrehtesBild(surf, bild, oben_links, winkel):
 
-    rotated_image = pygame.transform.rotate(image, angle)
-    new_rect = rotated_image.get_rect(center = image.get_rect(topleft = topleft).center)
-
-    surf.blit(rotated_image, new_rect.topleft)
+    gedrehtes_bild = pygame.transform.rotate(bild, winkel)
+    new_rect = gedrehtes_bild.get_rect(center = bild.get_rect(topleft = oben_links).center)
+    surf.blit(gedrehtes_bild, new_rect.topleft)
 
 def fenster_zeichnen(gewonnen, voegel, roehren, boden, punktzahl, gen, pipe_ind):
 
@@ -211,15 +209,15 @@ def fenster_zeichnen(gewonnen, voegel, roehren, boden, punktzahl, gen, pipe_ind)
         bird.zeichnen(gewonnen)
 
     # Punktzahl anzeigen
-    score_label = STAT_FONT.render("Score: " + str(punktzahl), 1, (255, 255, 255))
+    score_label = STAT_FONT.render("Punktzahl: " + str(punktzahl), 1, (255, 255, 255))
     gewonnen.blit(score_label, (FENSTER_BREITE - score_label.get_width() - 15, 10))
 
     # Generationen
-    score_label = STAT_FONT.render("Gens: " + str(gen-1),1,(255,255,255))
+    score_label = STAT_FONT.render("Generation: " + str(gen),1,(255,255,255))
     gewonnen.blit(score_label, (10, 10))
 
     # Anzahl der lebenden Vögel anzeigen
-    score_label = STAT_FONT.render("Alive: " + str(len(voegel)), 1, (255, 255, 255))
+    score_label = STAT_FONT.render("Am Leben: " + str(len(voegel)), 1, (255, 255, 255))
     gewonnen.blit(score_label, (10, 50))
 
     pygame.display.update()
@@ -261,42 +259,47 @@ def gene_auswerten(genomes, config):
                 break
 
         pipe_ind = 0
+        # guckt, ob die erste oder die zweite Röhre verwendet werden soll, wenn mehrere auf dem Bildschirm sind
         if len(voegel) > 0:
-            if len(roehren) > 1 and voegel[0].x > roehren[0].x + roehren[0].ROHERE_OBEN.get_width():  # guckt, ob die erste oder die zweite Röhre
-                pipe_ind = 1                                                                            #verwendet werden soll, wenn mehrere auf dem Bildschirm sind
-
-        for x, vogel in enumerate(voegel):  # pro sekunde wo ein Vogel lebt, wird das fitness level um 0,1 hochgesetzt
+            if len(roehren) > 1 and voegel[0].x > roehren[0].x + \
+                    roehren[0].ROHERE_OBEN.get_width():
+                pipe_ind = 1
+        # pro sekunde wo ein Vogel lebt, wird das fitness level um 0,1 hochgesetzt
+        for x, vogel in enumerate(voegel):
             ge[x].fitness += 0.1
             vogel.bewegen()
 
-            # sendet dem neuron die Vogelposition, die Röhrenpositionen and und lässt die KI entscheiden, ob der Vogel springen soll, oder nicht
-            output = nets[voegel.index(vogel)].activate((vogel.y, abs(vogel.y - roehren[pipe_ind].hoehe), abs(vogel.y - roehren[pipe_ind].unten)))
+            # sendet dem Neuron die Vogelposition, die Röhrenpositionen
+            # und lässt die KI entscheiden, ob der Vogel springen soll, oder nicht
 
-            if output[0] > 0.5:  # benutzt wird eine tanh Aktivierungsfunktion, welche ein Ergebniuss zwischen -1 und 1 hält. Wenn über 0.5 soll der Vogel springen
+            output = nets[voegel.index(vogel)].activate((vogel.y, abs(vogel.y - roehren[pipe_ind].hoehe),
+                                                         abs(vogel.y - roehren[pipe_ind].unten)))
+            if output[0] > 0.5:  # benutzt wird eine tanh Aktivierungsfunktion,
+                                 # welche ein Ergebniss zwischen -1 und 1 hält. Wenn über 0.5 soll der Vogel springen
                 vogel.springen()
 
         boden.bewegen()
 
         rem = []
-        add_pipe = False
-        for pipe in roehren:
-            pipe.bewegen()
-            # checking for collision
+        roehre_hinzufuegen = False
+        for roehre in roehren:
+            roehre.bewegen()
+            # Kollisionscheck
             for vogel in voegel:
-                if pipe.kollision(vogel, win):
+                if roehre.kollision(vogel, win):
                     ge[voegel.index(vogel)].fitness -= 1
                     nets.pop(voegel.index(vogel))
                     ge.pop(voegel.index(vogel))
                     voegel.pop(voegel.index(vogel))
 
-            if pipe.x + pipe.ROHERE_OBEN.get_width() < 0:
-                rem.append(pipe)
+            if roehre.x + roehre.ROHERE_OBEN.get_width() < 0:
+                rem.append(roehre)
 
-            if not pipe.geschafft and pipe.x < vogel.x:
-                pipe.geschafft = True
-                add_pipe = True
+            if not roehre.geschafft and roehre.x < vogel.x:
+                roehre.geschafft = True
+                roehre_hinzufuegen = True
 
-        if add_pipe:
+        if roehre_hinzufuegen:
             punktzahl += 1
             # hier wird der fitnesswert jedes Mal, wenn er eine Röhre durchquert, hochgesetzt
             for genome in ge:
@@ -313,8 +316,6 @@ def gene_auswerten(genomes, config):
                 voegel.pop(voegel.index(vogel))
 
         fenster_zeichnen(WIN, voegel, roehren, boden, punktzahl, gen, pipe_ind)
-
-
 
 
 def run(config_file):
@@ -334,8 +335,8 @@ def run(config_file):
     # Maximum 50 Generationen werden erstellt
     winner = p.run(gene_auswerten, 50)
 
-    # nach 50 Generationen wird das finale Ergebnis abgezeigt
-    print('\nBest genome:\n{!s}'.format(winner))
+    # nach 50 Generationen wird das finale Ergebnis angezeigt
+    print('\nBestes gen:\n{!s}'.format(winner))
 
 
 if __name__ == '__main__':
