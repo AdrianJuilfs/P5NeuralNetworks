@@ -15,10 +15,14 @@ LINIEN_ZEICHNEN = True
 WIN = pygame.display.set_mode((FENSTER_BREITE, FENSTER_HOEHE))
 pygame.display.set_caption("Flappy Bird")
 
-roehren_bild = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs/roehre.png")).convert_alpha())
-hintergrund_bild = pygame.transform.scale(pygame.image.load(os.path.join("imgs/hintergrund.png")).convert_alpha(), (600, 900))
-vogel_bilder = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs/vogel" + str(x) + ".png"))) for x in range(1, 4)]
-boden_bild = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs/boden.png")).convert_alpha())
+roehren_bild = pygame.transform.scale2x\
+    (pygame.image.load(os.path.join("imgs/roehre.png")).convert_alpha())
+hintergrund_bild = pygame.transform.scale\
+    (pygame.image.load(os.path.join("imgs/hintergrund.png")).convert_alpha(), (600, 900))
+vogel_bilder = [pygame.transform.scale2x
+                (pygame.image.load(os.path.join("imgs/vogel" + str(x) + ".png"))) for x in range(1, 4)]
+boden_bild = pygame.transform.scale2x\
+    (pygame.image.load(os.path.join("imgs/boden.png")).convert_alpha())
 
 gen = 0
 
@@ -51,7 +55,7 @@ class Vogel:
         self.tick_zaehler += 1
 
         # gravitation
-        verschiebung = self.geschwindigkeit * self.tick_zaehler + 0.5 * 3 * self.tick_zaehler ** 2
+        verschiebung = self.geschwindigkeit * self.tick_zaehler + 1.5 * self.tick_zaehler ** 2
 
         # geschwindigkeit
         if verschiebung >= 16:
@@ -275,7 +279,8 @@ def gene_auswerten(genomes, config):
             output = nets[voegel.index(vogel)].activate((vogel.y, abs(vogel.y - roehren[pipe_ind].hoehe),
                                                          abs(vogel.y - roehren[pipe_ind].unten)))
             if output[0] > 0.5:  # benutzt wird eine tanh Aktivierungsfunktion,
-                                 # welche ein Ergebniss zwischen -1 und 1 hält. Wenn über 0.5 soll der Vogel springen
+                                 # welche ein Ergebniss zwischen -1 und 1 hält.
+                                 # Wenn über 0.5 soll der Vogel springen
                 vogel.springen()
 
         boden.bewegen()
