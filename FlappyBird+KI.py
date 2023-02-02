@@ -9,8 +9,8 @@ pygame.font.init() # initialisierung der Schriftarten von pygame
 FENSTER_BREITE = 600
 FENSTER_HOEHE = 800
 BODEN = 730
-STAT_FONT = pygame.font.SysFont("arial", 40)
-LINIEN_ZEICHNEN = True
+STAT_FONT = pygame.font.SysFont("arial", 30)
+LINIEN_ZEICHNEN = False
 
 WIN = pygame.display.set_mode((FENSTER_BREITE, FENSTER_HOEHE))
 pygame.display.set_caption("Flappy Bird")
@@ -279,7 +279,7 @@ def gene_auswerten(genomes, config):
             output = nets[voegel.index(vogel)].activate((vogel.y, abs(vogel.y - roehren[pipe_ind].hoehe),
                                                          abs(vogel.y - roehren[pipe_ind].unten)))
             if output[0] > 0.5:  # benutzt wird eine tanh Aktivierungsfunktion,
-                                 # welche ein Ergebniss zwischen -1 und 1 hält.
+                                 # welche ein Ergebnis zwischen 0 und 1 hält.
                                  # Wenn über 0.5 soll der Vogel springen
                 vogel.springen()
 
@@ -325,9 +325,7 @@ def gene_auswerten(genomes, config):
 
 def run(config_file):
 
-    config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                         config_file)
+    config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,neat.DefaultSpeciesSet, neat.DefaultStagnation,config_file)
 
     # Population wird erstellt
     p = neat.Population(config)
